@@ -1,12 +1,22 @@
 import { ProfileUI } from '@ui-pages';
 import { FC, SyntheticEvent, useEffect, useState } from 'react';
+import { useDispatch, useSelector } from '../../services/store';
+import {
+  selectUserProfileLoading,
+  selectUserProfile,
+  updateUser,
+  fetchProfile
+} from '../../services/profile';
+import { Preloader } from '@ui';
 
 export const Profile: FC = () => {
-  /** TODO: взять переменную из стора */
-  const user = {
-    name: '',
-    email: ''
-  };
+  const dispatch = useDispatch();
+  const isLoading = useSelector(selectUserProfileLoading);
+  const user = useSelector(selectUserProfile);
+
+  if (isLoading || !user) {
+    return <Preloader />;
+  }
 
   const [formValue, setFormValue] = useState({
     name: user.name,
@@ -29,6 +39,21 @@ export const Profile: FC = () => {
 
   const handleSubmit = (e: SyntheticEvent) => {
     e.preventDefault();
+
+    dispatch(
+      updateUser({
+        name: formValue.name !== user.name ? formValue.name : undefined,
+        email: formValue.email !== user.email ? formValue.email : undefined,
+        password: !!formValue.password ? formValue.password : undefined
+      })
+    );
+
+    setFormValue({
+      name: user.name,
+      email: user.email,
+      password: ''
+    });
+    dispatch(fetchProfile());
   };
 
   const handleCancel = (e: SyntheticEvent) => {
@@ -41,6 +66,7 @@ export const Profile: FC = () => {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('changed value of ', e.target.name, ' to ', e.target.value);
     setFormValue((prevState) => ({
       ...prevState,
       [e.target.name]: e.target.value
@@ -56,6 +82,4 @@ export const Profile: FC = () => {
       handleInputChange={handleInputChange}
     />
   );
-
-  return null;
 };
