@@ -3,23 +3,19 @@ import { TIngredientsCategoryProps } from './type';
 import { TIngredient } from '@utils-types';
 import { IngredientsCategoryUI } from '../ui/ingredients-category';
 import { useSelector } from '../../services/store';
-import { selectConstructorIds } from '../../services/burger-constructor';
-import { selectIngredients } from '../../services/ingredients';
+import { selectConstructorIngredients } from '../../services/burger-constructor';
 import { getConstructorData } from '../../utils/utils';
 
 export const IngredientsCategory = forwardRef<
   HTMLUListElement,
   TIngredientsCategoryProps
 >(({ title, titleRef, ingredients }, ref) => {
-  // ids, которые пользователь добавил в конструктор (в порядке)
-  const selectedIds = useSelector(selectConstructorIds);
-
-  // все доступные ингредиенты из стора (нужно для мапинга id -> объект)
-  const allIngredients = useSelector(selectIngredients);
+  // ингредиенты, которые пользователь добавил в конструктор (в порядке)
+  const selectedIngredients = useSelector(selectConstructorIngredients);
 
   const burgerConstructor = useMemo(
-    () => getConstructorData(selectedIds, allIngredients),
-    [selectedIds, allIngredients]
+    () => getConstructorData(selectedIngredients),
+    [selectedIngredients]
   );
 
   const ingredientsCounters = useMemo(() => {

@@ -1,35 +1,41 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from './store';
+import { TConstructorIngredient, TIngredient } from '@utils-types';
+import { v4 } from 'uuid';
 
 interface BurgerConstructorState {
   // Храним массив id ингредиентов в порядке конструктора
-  selectedIds: string[];
+  selectedIngredients: TConstructorIngredient[];
 }
 
 export const initialConstructor: BurgerConstructorState = {
-  selectedIds: []
+  selectedIngredients: []
 };
 
 export const burgerConstructorSlice = createSlice({
   name: 'constructor',
   initialState: initialConstructor,
   reducers: {
-    addIngredient(state, action: PayloadAction<string>) {
-      // добавляем id ингредиента в конец
-      if (!state.selectedIds.includes(action.payload))
-        state.selectedIds.push(action.payload);
+    addIngredient: {
+      reducer: (state, action: PayloadAction<TConstructorIngredient>) => {
+        state.selectedIngredients.push(action.payload);
+      },
+      prepare: (ingredient: TIngredient) => {
+        const key = v4();
+        return { payload: { ...ingredient, id: key } };
+      }
     },
     removeIngredient(state, action: PayloadAction<number>) {
       // удаляем по индексу
-      state.selectedIds.splice(action.payload, 1);
+      state.selectedIngredients.splice(action.payload, 1);
     },
     moveIngredient(state, action: PayloadAction<{ from: number; to: number }>) {
       const { from, to } = action.payload;
-      const item = state.selectedIds.splice(from, 1)[0];
-      state.selectedIds.splice(to, 0, item);
+      const item = state.selectedIngredients.splice(from, 1)[0];
+      state.selectedIngredients.splice(to, 0, item);
     },
     clearConstructor(state) {
-      state.selectedIds = [];
+      state.selectedIngredients = [];
     }
   }
 });
@@ -41,5 +47,5 @@ export const {
   clearConstructor
 } = burgerConstructorSlice.actions;
 
-export const selectConstructorIds = (state: RootState) =>
-  state.burgerConstructor.selectedIds;
+export const selectConstructorIngredients = (state: RootState) =>
+  state.burgerConstructor.selectedIngredients;

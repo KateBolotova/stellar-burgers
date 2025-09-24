@@ -5,37 +5,30 @@ import { BurgerIngredientUI } from '@ui';
 import { TBurgerIngredientProps } from './type';
 import { useDispatch, useSelector } from '../../services/store';
 import {
-  selectConstructorIds,
+  selectConstructorIngredients,
   addIngredient,
   removeIngredient
 } from '../../services/burger-constructor';
-import { selectIngredients } from '../../services/ingredients';
 
 export const BurgerIngredient: FC<TBurgerIngredientProps> = memo(
   ({ ingredient, count }) => {
-    // ids, которые пользователь добавил в конструктор (в порядке)
-    const selectedIds = useSelector(selectConstructorIds);
-
-    // все доступные ингредиенты из стора (нужно для мапинга id -> объект)
-    const allIngredients = useSelector(selectIngredients);
+    // ингридиенты, которые пользователь добавил в конструктор (в порядке)
+    const selectedIngredients = useSelector(selectConstructorIngredients);
 
     const location = useLocation();
     const dispatch = useDispatch();
 
     const handleAdd = () => {
       if (ingredient.type == 'bun') {
-        const anotherBunIndex = selectedIds.findIndex(
-          (selectedBunId) =>
-            !!allIngredients.find(
-              (ing) => ing.type == 'bun' && ing._id === selectedBunId
-            )
+        const anotherBunIndex = selectedIngredients.findIndex(
+          (ingredient) => ingredient.type == 'bun'
         );
         if (anotherBunIndex !== -1) {
           dispatch(removeIngredient(anotherBunIndex));
         }
       }
 
-      dispatch(addIngredient(ingredient._id));
+      dispatch(addIngredient(ingredient));
     };
 
     return (

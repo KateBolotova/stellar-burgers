@@ -8,11 +8,13 @@ import {
 } from '../../services/profile';
 import { Preloader } from '@ui';
 import { Navigate } from 'react-router-dom';
+import { getCookie } from '../../utils/cookie';
 
 export const ProtectedRoute: FC<TProtectedRouteProps> = ({ children }) => {
   const dispatch = useDispatch();
   const user = useSelector(selectUserProfile);
   const isLoading = useSelector(selectUserProfileLoading);
+  const token = getCookie('accessToken');
 
   useEffect(() => {
     dispatch(fetchProfile());
@@ -22,7 +24,7 @@ export const ProtectedRoute: FC<TProtectedRouteProps> = ({ children }) => {
     return <Preloader />;
   }
 
-  if (!user) {
+  if (!token && !user) {
     return <Navigate to='/login' />;
   }
 

@@ -5,16 +5,18 @@ import { useDispatch, useSelector } from '../../services/store';
 import {
   moveIngredient,
   removeIngredient,
-  selectConstructorIds
+  selectConstructorIngredients
 } from '../../services/burger-constructor';
 
 export const BurgerConstructorElement: FC<BurgerConstructorElementProps> = memo(
   ({ ingredient, index, totalItems }) => {
     const dispatch = useDispatch();
 
-    const selectedIds = useSelector(selectConstructorIds);
+    const selectedIngredients = useSelector(selectConstructorIngredients);
 
-    const selectedIndex = selectedIds.findIndex((id) => id === ingredient.id);
+    const selectedIndex = selectedIngredients.findIndex(
+      (ing) => ing.id === ingredient.id
+    );
 
     const handleMoveDown = () => {
       dispatch(

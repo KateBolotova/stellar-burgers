@@ -10,11 +10,10 @@ import {
   createOrder
 } from '../../services/order-creation';
 import {
-  selectConstructorIds,
+  selectConstructorIngredients,
   clearConstructor
 } from '../../services/burger-constructor';
 import { fetchUserOrders } from '../../services/orders';
-import { selectIngredients } from '../../services/ingredients';
 import { getConstructorData } from '../../utils/utils';
 import { useNavigate } from 'react-router-dom';
 
@@ -23,10 +22,7 @@ export const BurgerConstructor: FC = () => {
   const navigate = useNavigate();
 
   // ids, которые пользователь добавил в конструктор (в порядке)
-  const selectedIds = useSelector(selectConstructorIds);
-
-  // все доступные ингредиенты из стора (нужно для мапинга id -> объект)
-  const allIngredients = useSelector(selectIngredients);
+  const selectedIngredients = useSelector(selectConstructorIngredients);
 
   // флаг, что запрос создания заказа в процессе
   const orderRequest = useSelector(selectCreateOrderLoading);
@@ -43,8 +39,8 @@ export const BurgerConstructor: FC = () => {
    * - ingredients: все остальные выбранные ингредиенты (в порядке)
    */
   const constructorItems = useMemo(
-    () => getConstructorData(selectedIds, allIngredients),
-    [selectedIds, allIngredients]
+    () => getConstructorData(selectedIngredients),
+    [selectedIngredients]
   );
 
   const onOrderClick = () => {
@@ -53,11 +49,13 @@ export const BurgerConstructor: FC = () => {
       navigate('/login');
       return;
     }
-    dispatch(createOrder(selectedIds)).then(() => {
-      dispatch(clearLastOrder());
-      dispatch(clearConstructor());
-      dispatch(fetchUserOrders());
-    });
+    dispatch(createOrder(selectedIngredients.map((ing) => ing._id))).then(
+      () => {
+        dispatch(clearLastOrder());
+        dispatch(clearConstructor());
+        dispatch(fetchUserOrders());
+      }
+    );
   };
   const closeOrderModal = () => {
     dispatch(clearLastOrder());

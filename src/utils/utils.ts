@@ -1,29 +1,22 @@
 import { TConstructorIngredient, TIngredient } from '@utils-types';
 
 export const getConstructorData = (
-  selectedIds: string[],
-  allIngredients: TIngredient[]
+  selectedIngredients: TConstructorIngredient[]
 ) => {
   const bun: TConstructorIngredient | null = (() => {
-    for (const id of selectedIds) {
-      const ing = allIngredients.find((i) => i._id === id);
-      if (ing && ing.type === 'bun')
+    for (const ing of selectedIngredients) {
+      if (ing.type == 'bun') {
         return {
-          id: ing._id,
-          ...ing!
+          ...ing
         };
+      }
     }
     return null;
   })();
 
-  const ingredients: TConstructorIngredient[] = selectedIds
-    .map((id) => allIngredients.find((i) => i._id === id))
+  const ingredients: TConstructorIngredient[] = selectedIngredients
     .filter(Boolean)
-    .filter((ing) => (ing as TIngredient).type !== 'bun')
-    .map((ing) => ({
-      id: ing!._id,
-      ...ing!
-    }));
+    .filter((ing) => (ing as TIngredient).type !== 'bun');
 
   return {
     bun: bun,
