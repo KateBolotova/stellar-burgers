@@ -1,24 +1,65 @@
 import { FC, useMemo } from 'react';
-import { TConstructorIngredient } from '@utils-types';
+import { TConstructorIngredient, TIngredient } from '@utils-types';
 import { BurgerConstructorUI } from '@ui';
+import { useDispatch, useSelector } from '../../services/store';
+import { selectUserProfile } from '../../services/profile';
+import {
+  selectCreateOrderLoading,
+  selectLastCreatedOrder,
+  clearLastOrder,
+  createOrder
+} from '../../services/order-creation';
+import {
+  selectConstructorIngredients,
+  clearConstructor
+} from '../../services/burger-constructor';
+import { fetchUserOrders } from '../../services/orders';
+import { getConstructorData } from '../../utils/utils';
+import { useNavigate } from 'react-router-dom';
 
 export const BurgerConstructor: FC = () => {
-  /** TODO: взять переменные constructorItems, orderRequest и orderModalData из стора */
-  const constructorItems = {
-    bun: {
-      price: 0
-    },
-    ingredients: []
-  };
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const orderRequest = false;
+  // ids, которые пользователь добавил в конструктор (в порядке)
+  const selectedIngredients = useSelector(selectConstructorIngredients);
 
-  const orderModalData = null;
+  // флаг, что запрос создания заказа в процессе
+  const orderRequest = useSelector(selectCreateOrderLoading);
+
+  // данные последнего созданного заказа (для модалки)
+  const orderModalData = useSelector(selectLastCreatedOrder);
+
+  // пользователь для проверки авторизации
+  const user = useSelector(selectUserProfile);
+
+  /**
+   * Собираем constructorItems:
+   * - bun: первый найденный ингредиент типа 'bun' среди selectedIds (или null)
+   * - ingredients: все остальные выбранные ингредиенты (в порядке)
+   */
+  const constructorItems = useMemo(
+    () => getConstructorData(selectedIngredients),
+    [selectedIngredients]
+  );
 
   const onOrderClick = () => {
     if (!constructorItems.bun || orderRequest) return;
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    dispatch(createOrder(selectedIngredients.map((ing) => ing._id))).then(
+      () => {
+        dispatch(clearLastOrder());
+        dispatch(clearConstructor());
+        dispatch(fetchUserOrders());
+      }
+    );
   };
-  const closeOrderModal = () => {};
+  const closeOrderModal = () => {
+    dispatch(clearLastOrder());
+  };
 
   const price = useMemo(
     () =>
@@ -29,8 +70,6 @@ export const BurgerConstructor: FC = () => {
       ),
     [constructorItems]
   );
-
-  return null;
 
   return (
     <BurgerConstructorUI
