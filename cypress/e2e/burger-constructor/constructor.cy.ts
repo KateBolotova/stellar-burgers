@@ -1,5 +1,5 @@
 const BASE_API = 'https://norma.nomoreparties.space/api/';
-const TEST_URL = 'http://localhost:4000';
+const TEST_URL = '/';
 const SELECTORS = {
   constructor: '[data-cy=constructor]',
   ingredientList: '[data-cy=ingredients-list]',
