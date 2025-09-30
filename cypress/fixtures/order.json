@@ -1,0 +1,35 @@
+{
+  "success": true,
+  "name": "Test Order",
+  "order": {
+    "ingredients": [
+      {
+        "_id": "uuid",
+        "name": "Булка",
+        "type": "bun",
+        "proteins": 1,
+        "fat": 2,
+        "carbohydrates": 3,
+        "calories": 4,
+        "price": 5,
+        "image": "https://code.s3.yandex.net/react/code/bun-01.png",
+        "image_mobile": "https://code.s3.yandex.net/react/code/bun-01-mobile.png",
+        "image_large": "https://code.s3.yandex.net/react/code/bun-01-large.png",
+        "__v": 0
+      }
+    ],
+    "_id": "testuuid",
+    "owner": {
+      "name": "owner",
+      "email": "example@example.com",
+      "createdAt": "2025-09-23T18:18:38.797Z",
+      "updatedAt": "2025-09-30T09:01:59.801Z"
+    },
+    "status": "done",
+    "name": "Тестовый бургер",
+    "createdAt": "2025-09-30T09:04:46.000Z",
+    "updatedAt": "2025-09-30T09:04:47.337Z",
+    "number": 10000,
+    "price": 5000
+  }
+}
