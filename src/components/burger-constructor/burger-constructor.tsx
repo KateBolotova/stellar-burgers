@@ -51,7 +51,6 @@ export const BurgerConstructor: FC = () => {
     }
     dispatch(createOrder(selectedIngredients.map((ing) => ing._id))).then(
       () => {
-        dispatch(clearLastOrder());
         dispatch(clearConstructor());
         dispatch(fetchUserOrders());
       }

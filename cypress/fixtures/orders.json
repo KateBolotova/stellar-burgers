@@ -1,0 +1,14 @@
+{
+  "success": true,
+  "orders": [
+    {
+      "_id": "testuuid",
+      "ingredients": ["uuid"],
+      "status": "done",
+      "name": "Тестовый бургер",
+      "createdAt": "2025-09-30T09:04:46.000Z",
+      "updatedAt": "2025-09-30T09:04:47.337Z",
+      "number": 10000
+    }
+  ]
+}
