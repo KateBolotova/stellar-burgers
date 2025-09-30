@@ -1,4 +1,36 @@
 const BASE_API = 'https://norma.nomoreparties.space/api/';
+const TEST_URL = 'http://localhost:4000';
+const SELECTORS = {
+  constructor: '[data-cy=constructor]',
+  ingredientList: '[data-cy=ingredients-list]',
+  ingredientCard: '[data-cy=ingredient-card]',
+  orderButton: '[data-cy=order-button]',
+  orderModalNumber: '[data-cy=order-modal-number]',
+  modalOverlay: '[data-cy=modal-overlay]',
+  ingredientModal: '[data-cy=ingredient-modal]',
+  closeModal: '[data-cy=close-modal]',
+  modalUi: '[data-cy=modal-ui]'
+};
+
+declare global {
+  namespace Cypress {
+    interface Chainable<Subject = any> {
+      /**
+       * Находит карточку ингредиента по тексту и возвращает её.
+       * @example cy.findIngredientCard('Говяжья котлета').as('card')
+       */
+      findIngredientCard(name: string): Chainable<JQuery<HTMLElement>>;
+    }
+  }
+}
+
+Cypress.Commands.addAll({
+  findIngredientCard(name: string) {
+    return cy
+      .contains(SELECTORS.ingredientCard, name)
+      .closest(SELECTORS.ingredientCard);
+  }
+});
 
 describe('Burger Constructor E2E', () => {
   beforeEach(() => {
@@ -25,7 +57,7 @@ describe('Burger Constructor E2E', () => {
       // Устанвоим куки для авторизации при оформлении заказа
       cy.setCookie('accessToken', 'test-access-token');
       // И рефреш токен тоже заполним
-      cy.visit('http://localhost:4000', {
+      cy.visit(TEST_URL, {
         onBeforeLoad(win) {
           win.localStorage.setItem('refreshToken', 'test-refresh-token');
         }
@@ -35,58 +67,52 @@ describe('Burger Constructor E2E', () => {
       cy.wait('@getIngredients');
 
       // Находим конструктор
-      cy.get('[data-cy=constructor]').as('constructor');
+      cy.get(SELECTORS.constructor).as('constructor');
 
       // Проверяем что список ингредиентов есть
-      cy.get('[data-cy=ingredients-list]').should('exist');
+      cy.get(SELECTORS.ingredientList).should('exist');
 
       // Находим в списке первую булочку
-      cy.get('[data-cy=ingredient-card]')
-        .contains('Классическая булка')
-        .closest('[data-cy=ingredient-card]')
-        .as('bunCard');
+      cy.findIngredientCard('Классическая булка').as('bunCard');
 
       // Добавляем её по кнопке
-      cy.get('@bunCard').find('button').click();
+      cy.get('@bunCard').contains('Добавить').click();
 
       // Проверяем, что булка появилась в конструкторе
       cy.get('@constructor').should('contain.text', 'Классическая булка');
 
       // Найдем начинку
-      cy.get('[data-cy=ingredient-card]')
-        .contains('Говяжья котлета')
-        .closest('[data-cy=ingredient-card]')
-        .as('ingredientCard');
+      cy.findIngredientCard('Говяжья котлета').as('ingredientCard');
 
       // Добавим начинку
-      cy.get('@ingredientCard').find('button').click();
+      cy.get('@ingredientCard').contains('Добавить').click();
 
       // Проверим, что добавилась
       cy.get('@constructor').should('contain.text', 'Говяжья котлета');
 
       // Оформим заказ
-      cy.get('@constructor').find('[data-cy=order-button]').click();
+      cy.get('@constructor').find(SELECTORS.orderButton).click();
 
       // Подождем, пока оформится
       cy.wait('@postOrder');
 
       // Должен появится номер заказа
-      cy.get('[data-cy=order-modal-number]').should('be.visible');
+      cy.get(SELECTORS.orderModalNumber).should('be.visible');
 
       // Он соотвествует данным заказа
       cy.fixture('order.json').then((order) => {
         const number = order.order.number;
-        cy.get('[data-cy=order-modal-number]').should(
+        cy.get(SELECTORS.orderModalNumber).should(
           'contain.text',
           String(number)
         );
       });
 
       // Закрываем кликом по оверлею
-      cy.get('[data-cy=modal-overlay]').click({ force: true });
+      cy.get(SELECTORS.modalOverlay).click({ force: true });
 
       // Модалка не показывается
-      cy.get('[data-cy=order-modal-number]').should('not.exist');
+      cy.get(SELECTORS.orderModalNumber).should('not.exist');
 
       // В конструкторе нет ингредиентов
       cy.get('@constructor').should('not.contain.text', 'Классическая булка');
@@ -96,7 +122,7 @@ describe('Burger Constructor E2E', () => {
 
   context('Модальное окно ингредиента', () => {
     beforeEach(() => {
-      cy.visit('http://localhost:4000');
+      cy.visit(TEST_URL);
       cy.wait('@getIngredients');
     });
 
@@ -106,15 +132,12 @@ describe('Burger Constructor E2E', () => {
         const ingredients = ingredientsResponse.data;
         ingredients.forEach((ing: any) => {
           // Клик по карточке должен открыть модальное окно
-          cy.get('[data-cy=ingredient-card]')
-            .contains(ing.name)
-            .closest('[data-cy=ingredient-card]')
-            .click();
+          cy.findIngredientCard(ing.name).click();
           // Окно видно
-          cy.get('[data-cy=ingredient-modal]').should('be.visible');
+          cy.get(SELECTORS.ingredientModal).should('be.visible');
 
           // Проверим, что в карточке есть все данные о ингредиенте
-          cy.get('[data-cy=ingredient-modal]').within(() => {
+          cy.get(SELECTORS.ingredientModal).within(() => {
             cy.contains(ing.name);
             cy.contains(ing.proteins);
             cy.contains(ing.fat);
@@ -123,7 +146,7 @@ describe('Burger Constructor E2E', () => {
           });
 
           // Закроем карточку кликом по оверлею
-          cy.get('[data-cy=modal-overlay]').click({ force: true });
+          cy.get(SELECTORS.modalOverlay).click({ force: true });
         });
       });
     });
@@ -134,15 +157,12 @@ describe('Burger Constructor E2E', () => {
         const ingredients = ingredientsResponse.data;
         ingredients.forEach((ing: any) => {
           // Клик по карточке должен открыть модальное окно
-          cy.get('[data-cy=ingredient-card]')
-            .contains(ing.name)
-            .closest('[data-cy=ingredient-card]')
-            .click();
+          cy.findIngredientCard(ing.name).click();
           // Окно видно
-          cy.get('[data-cy=ingredient-modal]').should('be.visible');
+          cy.get(SELECTORS.ingredientModal).should('be.visible');
 
           // Проверим, что в карточке есть все данные о ингредиенте
-          cy.get('[data-cy=ingredient-modal]').within(() => {
+          cy.get(SELECTORS.ingredientModal).within(() => {
             cy.contains(ing.name);
             cy.contains(ing.proteins);
             cy.contains(ing.fat);
@@ -151,12 +171,15 @@ describe('Burger Constructor E2E', () => {
           });
 
           // Закроем по кнопке
-          cy.get('[data-cy=ingredient-modal]')
-            .closest('[data-cy=modal-ui]')
-            .find('[data-cy=close-modal]')
+          cy.get(SELECTORS.ingredientModal)
+            .closest(SELECTORS.modalUi)
+            .find(SELECTORS.closeModal)
             .click();
         });
       });
     });
   });
 });
+
+// Чтобы работал declare global
+export {};
